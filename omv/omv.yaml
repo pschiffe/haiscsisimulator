@@ -1,0 +1,41 @@
+---
+:domain: scsi.local
+:network: 192.168.131.0/24
+:image: centos-7.1
+:cpus: ''
+:memory: 1024
+:disks: 0
+:disksize: 1G
+:boxurlprefix: ''
+:sync: rsync
+:syncdir: ''
+:syncsrc: ''
+:folder: ''
+:extern: []
+:cd: ''
+:puppet: false
+:classes: []
+:shell: []
+:docker: false
+:kubernetes: false
+:ansible: []
+:playbook: []
+:ansible_extras: {}
+:cachier: false
+:vms:
+- :name: controller
+  :disks: 2
+- :name: client1
+- :name: client2
+:namespace: scsi
+:count: 0
+:username: ''
+:password: ''
+:poolid: true
+:repos: []
+:update: true
+:reboot: true
+:unsafe: false
+:nested: false
+:comment: ''
+:reallyrm: false
