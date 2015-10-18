@@ -1,0 +1,52 @@
+---
+- hosts: servers
+  remote_user: root
+
+  tasks:
+  - name: install LIO target and targetcli
+    yum: pkg=python-rtslib,targetcli state=latest
+  - name: create first target
+    include: ansible-tasks/lio-target.yml name=client1 disk=/dev/vdb
+    notify:
+    - restart target
+  - name: create second target
+    include: ansible-tasks/lio-target.yml name=client2 disk=/dev/vdc
+    notify:
+    - restart target
+  - name: start and enable target
+    service: name=target state=started enabled=yes
+
+  handlers:
+    - name: restart target
+      service: name=target state=restarted
+
+
+- hosts: clients
+  remote_user: root
+
+  tasks:
+  - name: install iscsi initiator utils and multipath
+    yum: pkg=iscsi-initiator-utils,device-mapper-multipath state=latest
+  - name: update iscsid.conf
+    lineinfile:
+      dest=/etc/iscsi/iscsid.conf
+      regexp=^node.session.timeo.replacement_timeout
+      line='node.session.timeo.replacement_timeout = 5'
+  - name: discover target
+    command: /usr/sbin/iscsiadm --mode discovery --type sendtargets --portal {{ hostvars['controller']['ansible_default_ipv4']['address'] }}
+  - name: login to target
+    command: /usr/sbin/iscsiadm --mode node --login --targetname iqn.2015-10.local.iscsi:{{ ansible_hostname }}
+  - name: enable multipath
+    command: /usr/sbin/mpathconf --enable --with_multipathd y
+  - name: get multipath id
+    shell: multipathd -k"show maps format %w" | tail -n 1
+    register: multipath_id
+  - name: create multipath config
+    template: src=ansible-templates/multipath.conf.j2 dest=/etc/multipath.conf
+    notify:
+    - restart multipathd
+
+  handlers:
+    - name: restart multipathd
+      service: name=multipathd state=restarted
+

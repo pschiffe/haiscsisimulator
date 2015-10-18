@@ -1,0 +1,17 @@
+blacklist {
+    devnode "^vd[a-z]"
+}
+
+defaults {
+    user_friendly_names yes
+    find_multipaths yes
+    path_grouping_policy multibus  # So both paths are actively used
+}
+
+multipaths {
+    multipath {
+        wwid   {{ multipath_id.stdout }}
+        alias  mpatha
+    }
+}
+

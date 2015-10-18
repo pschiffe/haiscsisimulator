@@ -1,0 +1,38 @@
+---
+
+- name: disk exists
+  command: /bin/targetcli /backstores/block/{{ name  }}
+  ignore_errors: True
+  register: result
+
+- name: add disk
+  command: /bin/targetcli /backstores/block create {{ name }} {{ disk }}
+  when: result.rc != 0
+
+- name: target exists
+  command: /bin/targetcli /iscsi/iqn.2015-10.local.iscsi:{{ name }}
+  ignore_errors: True
+  register: result
+
+- name: create target
+  command: /bin/targetcli /iscsi create iqn.2015-10.local.iscsi:{{ name }}
+  when: result.rc != 0
+
+- name: add lun
+  command: /bin/targetcli /iscsi/iqn.2015-10.local.iscsi:{{ name }}/tpg1/luns create /backstores/block/{{ name  }}
+  when: result.rc != 0
+
+- name: delete default portal
+  command: /bin/targetcli /iscsi/iqn.2015-10.local.iscsi:{{ name }}/tpg1/portals delete 0.0.0.0 3260
+  ignore_errors: True
+  when: result.rc != 0
+
+- name: add portals
+  command: /bin/targetcli /iscsi/iqn.2015-10.local.iscsi:{{ name }}/tpg1/portals create {{ item }}
+  with_items: '{{ ansible_all_ipv4_addresses }}'
+  when: result.rc != 0
+
+- name: setup authentication
+  command: /bin/targetcli /iscsi/iqn.2015-10.local.iscsi:{{ name }}/tpg1 set attribute authentication=0 demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1
+  when: result.rc != 0
+
