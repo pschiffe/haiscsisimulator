@@ -25,6 +25,8 @@
 :vms:
 - :name: controller
   :disks: 2
+  :shell:
+  - script: yum -y install ansible
 - :name: client1
 - :name: client2
 :namespace: scsi
