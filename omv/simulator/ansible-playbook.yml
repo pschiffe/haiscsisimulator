@@ -32,12 +32,12 @@
       dest=/etc/iscsi/iscsid.conf
       regexp=^node.session.timeo.replacement_timeout
       line='node.session.timeo.replacement_timeout = 5'
-  - name: discover target
-    command: /usr/sbin/iscsiadm --mode discovery --type sendtargets --portal {{ hostvars['controller']['ansible_default_ipv4']['address'] }}
-  - name: login to target
-    command: /usr/sbin/iscsiadm --mode node --login --targetname iqn.2015-10.local.iscsi:{{ ansible_hostname }}
+  - name: discover and login to the target
+    open_iscsi: discover=yes login=yes auto_node_startup=yes portal={{ hostvars['controller']['ansible_default_ipv4']['address'] }} target=iqn.2015-10.local.iscsi:{{ ansible_hostname }}
   - name: enable multipath
     command: /usr/sbin/mpathconf --enable --with_multipathd y
+    args:
+      creates: /dev/mapper/mpatha
   - name: get multipath id
     shell: multipathd -k"show maps format %w" | tail -n 1
     register: multipath_id
@@ -45,6 +45,14 @@
     template: src=ansible-templates/multipath.conf.j2 dest=/etc/multipath.conf
     notify:
     - restart multipathd
+  - name: create partition on iscsi
+    shell: echo -e "n\np\n1\n\n\nw" | /usr/sbin/fdisk /dev/mapper/mpatha; /usr/sbin/partprobe
+    args:
+      creates: /dev/mapper/mpatha1
+  - name: create filesystem on iscsi
+    filesystem: fstype=xfs dev=/dev/mapper/mpatha1
+  - name: mount iscsi
+    mount: name=/mnt/iscsi src=/dev/mapper/mpatha1 fstype=xfs opts=defaults,_netdev state=mounted
 
   handlers:
     - name: restart multipathd

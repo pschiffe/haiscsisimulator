@@ -1,7 +1,7 @@
 ---
 
 - name: disk exists
-  command: /bin/targetcli /backstores/block/{{ name  }}
+  shell: /bin/targetcli /backstores/block/{{ name  }} 2> /dev/null
   ignore_errors: True
   register: result
 
@@ -10,7 +10,7 @@
   when: result.rc != 0
 
 - name: target exists
-  command: /bin/targetcli /iscsi/iqn.2015-10.local.iscsi:{{ name }}
+  shell: /bin/targetcli /iscsi/iqn.2015-10.local.iscsi:{{ name }} 2> /dev/null
   ignore_errors: True
   register: result
 
@@ -29,7 +29,9 @@
 
 - name: add portals
   command: /bin/targetcli /iscsi/iqn.2015-10.local.iscsi:{{ name }}/tpg1/portals create {{ item }}
-  with_items: '{{ ansible_all_ipv4_addresses }}'
+  with_items:
+  - '{{ ansible_eth0.ipv4.address }}'
+  - '{{ ansible_eth1.ipv4.address }}'
   when: result.rc != 0
 
 - name: setup authentication
