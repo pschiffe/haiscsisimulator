@@ -152,8 +152,7 @@ Use multipath device:
 ```
 echo -e "n\np\n1\n\n\nw" | fdisk /dev/mapper/mpatha
   # Reload partition table
-iscsiadm --mode node --logout
-iscsiadm --mode node --login --targetname iqn.2015-10.local.iscsi:disk1
+partprobe
 mkfs.xfs /dev/mapper/mpatha1
 mkdir -p /mnt/iscsi
 echo '/dev/mapper/mpatha1  /mnt/iscsi  xfs  defaults,_netdev  0 0' >> /etc/fstab
