@@ -213,7 +213,6 @@ Connect to the controller and configure it together with clients:
 ```
 omv ssh controller
 sudo su -
-yum install ansible
 cd /vagrant/simulator
 ./distribute-keys.sh
 ansible-playbook -i ansible-hosts ansible-playbook.yml
