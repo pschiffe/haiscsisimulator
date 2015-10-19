@@ -57,32 +57,32 @@ yum install python-rtslib targetcli
 targetcli
   # Create 2 backstores of block type, one for each drive
 cd /backstores/block/
-create disk1 /dev/vdb
-create disk2 /dev/vdc
+create client1 /dev/vdb
+create client2 /dev/vdc
   # Create 2 targets, one for each drive
 cd /iscsi/
-create iqn.2015-10.local.iscsi:disk1
-create iqn.2015-10.local.iscsi:disk2
+create iqn.2015-10.local.iscsi:client1
+create iqn.2015-10.local.iscsi:client2
   # Add LUN to each target
-cd /iscsi/iqn.2015-10.local.iscsi:disk1/tpg1/luns/
-create /backstores/block/disk1
-cd /iscsi/iqn.2015-10.local.iscsi:disk2/tpg1/luns/
-create /backstores/block/disk2
+cd /iscsi/iqn.2015-10.local.iscsi:client1/tpg1/luns/
+create /backstores/block/client1
+cd /iscsi/iqn.2015-10.local.iscsi:client2/tpg1/luns/
+create /backstores/block/client2
   # Delete default portals and create new for both interfaces
-cd /iscsi/iqn.2015-10.local.iscsi:disk1/tpg1/portals/
+cd /iscsi/iqn.2015-10.local.iscsi:client1/tpg1/portals/
 delete 0.0.0.0 3260
-cd /iscsi/iqn.2015-10.local.iscsi:disk2/tpg1/portals/
+cd /iscsi/iqn.2015-10.local.iscsi:client2/tpg1/portals/
 delete 0.0.0.0 3260
 create 192.168.121.161  # IP of eth0
 create 192.168.131.100  # IP of eth1
-cd /iscsi/iqn.2015-10.local.iscsi:disk1/tpg1/portals/
+cd /iscsi/iqn.2015-10.local.iscsi:client1/tpg1/portals/
 create 192.168.121.161  # IP of eth0
 create 192.168.131.100  # IP of eth1
   # Set up authentication. I'm being brave here and using no authentication, because this is controlled enviroment.
   # It is possible to setup regular authentication, allowing only selected clients, with username and password.
-cd /iscsi/iqn.2015-10.local.iscsi:disk1/tpg1/
+cd /iscsi/iqn.2015-10.local.iscsi:client1/tpg1/
 set attribute authentication=0 demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1
-cd /iscsi/iqn.2015-10.local.iscsi:disk2/tpg1/
+cd /iscsi/iqn.2015-10.local.iscsi:client2/tpg1/
 set attribute authentication=0 demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1
 exit
 ```
@@ -109,7 +109,7 @@ iscsiadm --mode discovery --type sendtargets --portal 192.168.121.161  # IP of t
 
 Login to one of the targets:
 ```
-iscsiadm --mode node --login --targetname iqn.2015-10.local.iscsi:disk1
+iscsiadm --mode node --login --targetname iqn.2015-10.local.iscsi:client1
 ```
 
 Enable multipath:
